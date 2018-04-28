@@ -1,0 +1,52 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.13'
+
+    // need to be commented out when using cucumberJava
+    testCompile 'io.cucumber:cucumber-groovy:2.0.1'
+
+    testCompile 'io.cucumber:cucumber-java8:2.4.0'
+    testCompile 'io.cucumber:cucumber-junit:2.4.0'
+    testCompile 'junit:junit:4.12'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+task cucumberJava() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'step', 'src/test/resources']
+        }
+    }
+}
+
+task cucumber() {
+    dependsOn testClasses
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = [
+                    '--plugin', 'pretty',
+                    '--glue', 'src/test/groovy',
+                    'src/test/resources'
+            ]
+        }
+    }
+}
